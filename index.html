@@ -359,6 +359,19 @@
 
         <form id="admissionForm">
             <div class="form-group">
+                <label for="targetSchool">Target Graduate School</label>
+                <select id="targetSchool" required>
+                    <option value="">Select...</option>
+                    <option value="top5">Top 5 (MIT, Stanford, Harvard, Princeton, Yale)</option>
+                    <option value="top10">Top 10 (Columbia, UChicago, Penn, Caltech, Johns Hopkins)</option>
+                    <option value="top25">Top 25 (Cornell, Northwestern, Duke, Michigan, etc.)</option>
+                    <option value="top50">Top 50 (Strong R1 Research Universities)</option>
+                    <option value="top100">Top 100 (Good Graduate Programs)</option>
+                    <option value="regional">Regional Universities</option>
+                </select>
+            </div>
+
+            <div class="form-group">
                 <label for="gpa">GPA (0.0 - 4.0)</label>
                 <input type="number" id="gpa" step="0.01" min="0" max="4" placeholder="3.75" required>
             </div>
@@ -456,6 +469,7 @@
         });
 
         function calculateAdmission() {
+            const targetSchool = document.getElementById('targetSchool').value;
             const gpa = parseFloat(document.getElementById('gpa').value);
             const college = document.getElementById('college').value;
             const major = document.getElementById('major').value;
@@ -498,18 +512,51 @@
             }
             score += greScore;
 
-            // Calculate probability
+            // Calculate base probability
             let probability = (score / maxScore) * 100;
 
             // Adjust for major competitiveness
             if (major === 'stem') probability *= 0.95; // STEM slightly more competitive
             if (major === 'business') probability *= 0.93;
 
-            // Ensure probability is between 5 and 95
-            probability = Math.max(5, Math.min(95, probability));
+            // Apply target school difficulty modifier
+            let schoolDifficulty = 1.0;
+            let schoolName = '';
+            
+            if (targetSchool === 'top5') {
+                schoolDifficulty = 0.25; // Top 5 schools are extremely competitive
+                schoolName = 'Top 5 School';
+            } else if (targetSchool === 'top10') {
+                schoolDifficulty = 0.35;
+                schoolName = 'Top 10 School';
+            } else if (targetSchool === 'top25') {
+                schoolDifficulty = 0.55;
+                schoolName = 'Top 25 School';
+            } else if (targetSchool === 'top50') {
+                schoolDifficulty = 0.75;
+                schoolName = 'Top 50 School';
+            } else if (targetSchool === 'top100') {
+                schoolDifficulty = 0.90;
+                schoolName = 'Top 100 School';
+            } else if (targetSchool === 'regional') {
+                schoolDifficulty = 1.10;
+                schoolName = 'Regional University';
+            }
+
+            probability *= schoolDifficulty;
+
+            // Boost for excellent profiles at top schools
+            if (targetSchool === 'top5' || targetSchool === 'top10') {
+                if (gpa >= 3.9 && research >= 3 && publications >= 3) {
+                    probability += 15; // Strong research profile bonus
+                }
+            }
+
+            // Ensure probability is between 1 and 95
+            probability = Math.max(1, Math.min(95, probability));
 
             // Display results
-            displayResults(probability, gpaScore, collegeScore, researchScore, pubScore, greScore, gpa, research, publications);
+            displayResults(probability, gpaScore, collegeScore, researchScore, pubScore, greScore, gpa, research, publications, schoolName);
         }
 
         function displayResults(prob, gpaS, collegeS, researchS, pubS, greS, gpa, research, pubs) {
