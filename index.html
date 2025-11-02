@@ -410,19 +410,26 @@
 
             <div class="section-header">Test Scores</div>
 
-            <div class="form-group">
-                <label for="greVerbal">GRE Verbal (130-170, optional)</label>
-                <input type="number" id="greVerbal" min="130" max="170" placeholder="160">
+            <div class="checkbox-group">
+                <input type="checkbox" id="greOptional">
+                <label for="greOptional" class="checkbox-label">This program does not require GRE (test-optional/waived)</label>
             </div>
 
-            <div class="form-group">
-                <label for="greQuant">GRE Quantitative (130-170, optional)</label>
-                <input type="number" id="greQuant" min="130" max="170" placeholder="165">
-            </div>
+            <div id="greSection">
+                <div class="form-group">
+                    <label for="greVerbal">GRE Verbal (130-170, optional)</label>
+                    <input type="number" id="greVerbal" min="130" max="170" placeholder="160">
+                </div>
 
-            <div class="form-group">
-                <label for="greWriting">GRE Analytical Writing (0.0-6.0, optional)</label>
-                <input type="number" id="greWriting" step="0.5" min="0" max="6" placeholder="4.5">
+                <div class="form-group">
+                    <label for="greQuant">GRE Quantitative (130-170, optional)</label>
+                    <input type="number" id="greQuant" min="130" max="170" placeholder="165">
+                </div>
+
+                <div class="form-group">
+                    <label for="greWriting">GRE Analytical Writing (0.0-6.0, optional)</label>
+                    <input type="number" id="greWriting" step="0.5" min="0" max="6" placeholder="4.5">
+                </div>
             </div>
 
             <div class="section-header">Research Experience</div>
