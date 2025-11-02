@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graduate School Admission Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a0000 0%, #330000 50%, #000000 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: bgShift 10s ease infinite alternate;
+        }
+
+        @keyframes bgShift {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
+        .container {
+            background: linear-gradient(145deg, #1a1a1a 0%, #0d0d0d 100%);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(255, 0, 0, 0.3), 0 0 40px rgba(255, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+            border: 1px solid #330000;
+            animation: containerGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes containerGlow {
+            0% { box-shadow: 0 20px 60px rgba(255, 0, 0, 0.3), 0 0 40px rgba(255, 0, 0, 0.1); }
+            100% { box-shadow: 0 20px 60px rgba(255, 0, 0, 0.5), 0 0 60px rgba(255, 0, 0, 0.2); }
+        }
+
+        h1 {
+            color: #ff0000;
+            margin-bottom: 10px;
+            font-size: 36px;
+            text-align: center;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-weight: 800;
+            text-shadow: 0 0 20px rgba(255, 0, 0, 0.5), 0 0 40px rgba(255, 0, 0, 0.3);
+            animation: titlePulse 2s ease-in-out infinite;
+        }
+
+        @keyframes titlePulse {
+            0%, 100% { text-shadow: 0 0 20px rgba(255, 0, 0, 0.5), 0 0 40px rgba(255, 0, 0, 0.3); }
+            50% { text-shadow: 0 0 30px rgba(255, 0, 0, 0.8), 0 0 60px rgba(255, 0, 0, 0.5); }
+        }
+
+        .subtitle {
+            color: #999;
+            margin-bottom: 30px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            animation: fadeInUp 0.6s ease backwards;
+        }
+
+        .form-group:nth-child(1) { animation-delay: 0.1s; }
+        .form-group:nth-child(2) { animation-delay: 0.2s; }
+        .form-group:nth-child(3) { animation-delay: 0.3s; }
+        .form-group:nth-child(4) { animation-delay: 0.4s; }
+        .form-group:nth-child(5) { animation-delay: 0.5s; }
+        .form-group:nth-child(6) { animation-delay: 0.6s; }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #330000;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #0a0a0a;
+            color: #fff;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #ff0000;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+            transform: translateY(-2px);
+        }
+
+        select option {
+            background: #0a0a0a;
+            color: #fff;
+        }
+
+        .slider-container {
+            margin-top: 10px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(to right, #330000 0%, #ff0000 100%);
+            border-radius: 5px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #ff0000;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #ff0000;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        input[type="range"]::-moz-range-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+        }
+
+        .value-display {
+            text-align: right;
+            color: #fff;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #ff0000 0%, #990000 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 5px 20px rgba(255, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(255, 0, 0, 0.5);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(145deg, #1a1a1a 0%, #0d0d0d 100%);
+            border-radius: 12px;
+            display: none;
+            border: 2px solid #330000;
+        }
+
+        .result.show {
+            display: block;
+            animation: slideInScale 0.8s ease;
+        }
+
+        @keyframes slideInScale {
+            0% {
+                opacity: 0;
+                transform: translateY(30px) scale(0.9);
+            }
+            60% {
+                transform: translateY(-10px) scale(1.02);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .probability {
+            font-size: 48px;
+            font-weight: bold;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 15px;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+            animation: numberCount 1.5s ease;
+        }
+
+        @keyframes numberCount {
+            from {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .result-text {
+            text-align: center;
+            color: #fff;
+            font-size: 18px;
+            margin-bottom: 20px;
+            animation: fadeIn 0.8s ease 0.3s backwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .factors {
+            background: #0a0a0a;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border: 1px solid #330000;
+            animation: fadeIn 0.8s ease 0.5s backwards;
+        }
+
+        .factors h3 {
+            color: #fff;
+            margin-bottom: 15px;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .factor-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #1a1a1a;
+            transition: all 0.3s ease;
+        }
+
+        .factor-item:hover {
+            padding-left: 10px;
+            border-bottom-color: #ff0000;
+        }
+
+        .factor-item:last-child {
+            border-bottom: none;
+        }
+
+        .factor-label {
+            color: #bbb;
+            font-size: 14px;
+        }
+
+        .factor-value {
+            color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .recommendation {
+            background: #1a0000;
+            border-left: 4px solid #ff0000;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 4px;
+            animation: fadeIn 0.8s ease 0.7s backwards;
+        }
+
+        .recommendation h3 {
+            color: #fff;
+            margin-bottom: 10px;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .recommendation ul {
+            margin-left: 20px;
+            color: #ddd;
+        }
+
+        .recommendation li {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Graduate School Admission Calculator</h1>
+        <p class="subtitle">Estimate your chances based on key admission factors</p>
+
+        <form id="admissionForm">
+            <div class="form-group">
+                <label for="gpa">GPA (0.0 - 4.0)</label>
+                <input type="number" id="gpa" step="0.01" min="0" max="4" placeholder="3.75" required>
+            </div>
+
+            <div class="form-group">
+                <label for="college">Current College/University Tier</label>
+                <select id="college" required>
+                    <option value="">Select...</option>
+                    <option value="top10">Top 10 (Ivy League, Stanford, MIT, etc.)</option>
+                    <option value="top50">Top 50 (Strong R1 Universities)</option>
+                    <option value="top100">Top 100 (Good State Universities)</option>
+                    <option value="other">Other Accredited Institution</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="major">Major Field</label>
+                <select id="major" required>
+                    <option value="">Select...</option>
+                    <option value="stem">STEM (Science, Tech, Engineering, Math)</option>
+                    <option value="social">Social Sciences</option>
+                    <option value="humanities">Humanities</option>
+                    <option value="business">Business</option>
+                    <option value="arts">Arts</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="research">Years of Research Experience: <span id="researchValue">0</span></label>
+                <input type="range" id="research" min="0" max="5" step="0.5" value="0">
+            </div>
+
+            <div class="form-group">
+                <label for="publications">Publications/Conferences: <span id="pubsValue">0</span></label>
+                <input type="range" id="publications" min="0" max="10" step="1" value="0">
+            </div>
+
+            <div class="form-group">
+                <label for="gre">GRE Score (260-340, optional)</label>
+                <input type="number" id="gre" min="260" max="340" placeholder="320 (optional)">
+            </div>
+
+            <button type="submit">Calculate Admission Chances</button>
+        </form>
+
+        <div id="result" class="result">
+            <div class="probability" id="probability"></div>
+            <div class="result-text" id="resultText"></div>
+            
+            <div class="factors">
+                <h3>Factor Breakdown</h3>
+                <div class="factor-item">
+                    <span class="factor-label">GPA Score</span>
+                    <span class="factor-value" id="gpaScore"></span>
+                </div>
+                <div class="factor-item">
+                    <span class="factor-label">Institution Prestige</span>
+                    <span class="factor-value" id="collegeScore"></span>
+                </div>
+                <div class="factor-item">
+                    <span class="factor-label">Research Experience</span>
+                    <span class="factor-value" id="researchScore"></span>
+                </div>
+                <div class="factor-item">
+                    <span class="factor-label">Publications</span>
+                    <span class="factor-value" id="pubScore"></span>
+                </div>
+                <div class="factor-item">
+                    <span class="factor-label">Test Scores</span>
+                    <span class="factor-value" id="greScore"></span>
+                </div>
+            </div>
+
+            <div class="recommendation" id="recommendations"></div>
+        </div>
+    </div>
+
+    <script>
+        const researchSlider = document.getElementById('research');
+        const researchValue = document.getElementById('researchValue');
+        const pubsSlider = document.getElementById('publications');
+        const pubsValue = document.getElementById('pubsValue');
+
+        researchSlider.addEventListener('input', (e) => {
+            researchValue.textContent = e.target.value;
+        });
+
+        pubsSlider.addEventListener('input', (e) => {
+            pubsValue.textContent = e.target.value;
+        });
+
+        document.getElementById('admissionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            calculateAdmission();
+        });
+
+        function calculateAdmission() {
+            const gpa = parseFloat(document.getElementById('gpa').value);
+            const college = document.getElementById('college').value;
+            const major = document.getElementById('major').value;
+            const research = parseFloat(document.getElementById('research').value);
+            const publications = parseInt(document.getElementById('publications').value);
+            const gre = document.getElementById('gre').value;
+
+            // Scoring algorithm
+            let score = 0;
+            let maxScore = 100;
+
+            // GPA Score (35 points max)
+            const gpaScore = Math.min((gpa / 4.0) * 35, 35);
+            score += gpaScore;
+
+            // College Tier Score (15 points max)
+            let collegeScore = 0;
+            if (college === 'top10') collegeScore = 15;
+            else if (college === 'top50') collegeScore = 12;
+            else if (college === 'top100') collegeScore = 9;
+            else collegeScore = 6;
+            score += collegeScore;
+
+            // Research Experience Score (25 points max)
+            const researchScore = Math.min(research * 5, 25);
+            score += researchScore;
+
+            // Publications Score (15 points max)
+            const pubScore = Math.min(publications * 1.5, 15);
+            score += pubScore;
+
+            // GRE Score (10 points max)
+            let greScore = 5; // Default for no GRE
+            if (gre) {
+                const greNum = parseInt(gre);
+                if (greNum >= 330) greScore = 10;
+                else if (greNum >= 320) greScore = 8;
+                else if (greNum >= 310) greScore = 6;
+                else greScore = 4;
+            }
+            score += greScore;
+
+            // Calculate probability
+            let probability = (score / maxScore) * 100;
+
+            // Adjust for major competitiveness
+            if (major === 'stem') probability *= 0.95; // STEM slightly more competitive
+            if (major === 'business') probability *= 0.93;
+
+            // Ensure probability is between 5 and 95
+            probability = Math.max(5, Math.min(95, probability));
+
+            // Display results
+            displayResults(probability, gpaScore, collegeScore, researchScore, pubScore, greScore, gpa, research, publications);
+        }
+
+        function displayResults(prob, gpaS, collegeS, researchS, pubS, greS, gpa, research, pubs) {
+            const resultDiv = document.getElementById('result');
+            const probDiv = document.getElementById('probability');
+            const textDiv = document.getElementById('resultText');
+            
+            probDiv.textContent = Math.round(prob) + '%';
+            
+            if (prob >= 75) {
+                textDiv.textContent = 'Strong Chance of Admission!';
+                probDiv.style.color = '#10b981';
+            } else if (prob >= 50) {
+                textDiv.textContent = 'Moderate Chance of Admission';
+                probDiv.style.color = '#f59e0b';
+            } else {
+                textDiv.textContent = 'Consider Strengthening Your Profile';
+                probDiv.style.color = '#ef4444';
+            }
+
+            // Display factor scores
+            document.getElementById('gpaScore').textContent = Math.round(gpaS) + '/35';
+            document.getElementById('collegeScore').textContent = Math.round(collegeS) + '/15';
+            document.getElementById('researchScore').textContent = Math.round(researchS) + '/25';
+            document.getElementById('pubScore').textContent = Math.round(pubS) + '/15';
+            document.getElementById('greScore').textContent = Math.round(greS) + '/10';
+
+            // Generate recommendations
+            let recommendations = '<h3>Recommendations</h3><ul>';
+            
+            if (gpa < 3.5) {
+                recommendations += '<li>Focus on improving your GPA in remaining coursework</li>';
+            }
+            if (research < 2) {
+                recommendations += '<li>Seek research opportunities with professors in your field</li>';
+            }
+            if (pubs < 2) {
+                recommendations += '<li>Consider presenting at conferences or co-authoring papers</li>';
+            }
+            if (!document.getElementById('gre').value) {
+                recommendations += '<li>Consider taking the GRE if applying to competitive programs</li>';
+            }
+            if (prob >= 75) {
+                recommendations += '<li>You have a strong profile! Apply to reach schools as well</li>';
+            }
+            
+            recommendations += '</ul>';
+            document.getElementById('recommendations').innerHTML = recommendations;
+
+            resultDiv.classList.add('show');
+            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    </script>
+</body>
+</html>
