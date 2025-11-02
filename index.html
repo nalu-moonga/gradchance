@@ -727,7 +727,7 @@
             // Field-specific competitiveness modifiers
             const fieldModifiers = {
                 'cs': 0.75, 'economics': 0.80, 'psychology': 0.85,
-                'engineering': 0.90, 'business': 0.85, 'math': 0.82,
+                'engineering': 0.6, 'business': 0.85, 'math': 0.82,
                 'physics': 0.88, 'chemistry': 0.92, 'biology': 0.90,
                 'political-science': 0.93, 'sociology': 0.95,
                 'english': 0.87, 'history': 0.89, 'philosophy': 0.88,
@@ -745,7 +745,7 @@
             const phdMultiplier = programType === 'phd' ? 0.85 : 1.0;
             
             if (targetSchool === 'top5') {
-                schoolDifficulty = 0.20 * phdMultiplier;
+                schoolDifficulty = 0.05 * phdMultiplier;
                 schoolName = 'Top 5';
             } else if (targetSchool === 'top10') {
                 schoolDifficulty = 0.30 * phdMultiplier;
@@ -802,7 +802,7 @@
         function calculateBenchmarks(gpa, research, pubs, school, programType) {
             // Typical admitted student profiles
             const profiles = {
-                'top5': { gpa: 3.85, research: 3, pubs: 3 },
+                'top5': { gpa: 3.9, research: 3, pubs: 3 },
                 'top10': { gpa: 3.80, research: 2.5, pubs: 2 },
                 'top25': { gpa: 3.70, research: 2, pubs: 1 },
                 'top50': { gpa: 3.60, research: 1.5, pubs: 1 },
@@ -900,7 +900,7 @@
             }
 
             // Field-specific advice
-            const competitiveFields = ['cs', 'economics', 'psychology'];
+            const competitiveFields = ['cs', 'economics', 'psychology', 'engineering'];
             if (competitiveFields.includes(field) && prob < 40) {
                 recommendations += '<li>This field is highly competitive. Consider applying to a wider range of schools including safety options.</li>';
             }
