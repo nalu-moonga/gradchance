@@ -630,7 +630,7 @@
             // Determine weights based on program type
             let weights = {};
             if (programType === 'phd') {
-                weights = { gpa: 20, research: 30, publications: 20, gre: 8, lor: 10, app: 7, work: 5 };
+                weights = { gpa: 20, research: 30, publications: 10, gre: 8, lor: 20, app: 7, work: 5 };
             } else if (programType === 'masters') {
                 weights = { gpa: 30, research: 20, publications: 10, gre: 10, lor: 12, app: 10, work: 8 };
             } else { // professional
@@ -726,8 +726,8 @@
 
             // Field-specific competitiveness modifiers
             const fieldModifiers = {
-                'cs': 0.75, 'economics': 0.80, 'psychology': 0.85,
-                'engineering': 0.6, 'business': 0.85, 'math': 0.82,
+                'cs': 0.6, 'economics': 0.80, 'psychology': 0.85,
+                'engineering': 0.5, 'business': 0.85, 'math': 0.82,
                 'physics': 0.88, 'chemistry': 0.92, 'biology': 0.90,
                 'political-science': 0.93, 'sociology': 0.95,
                 'english': 0.87, 'history': 0.89, 'philosophy': 0.88,
@@ -745,10 +745,10 @@
             const phdMultiplier = programType === 'phd' ? 0.85 : 1.0;
             
             if (targetSchool === 'top5') {
-                schoolDifficulty = 0.05 * phdMultiplier;
+                schoolDifficulty = 0.005 * phdMultiplier;
                 schoolName = 'Top 5';
             } else if (targetSchool === 'top10') {
-                schoolDifficulty = 0.30 * phdMultiplier;
+                schoolDifficulty = 0.1 * phdMultiplier;
                 schoolName = 'Top 10';
             } else if (targetSchool === 'top25') {
                 schoolDifficulty = 0.50 * phdMultiplier;
