@@ -359,6 +359,15 @@
 
         <form id="admissionForm">
             <div class="form-group">
+                <label for="programType">Program Type</label>
+                <select id="programType" required>
+                    <option value="">Select...</option>
+                    <option value="phd">PhD Program</option>
+                    <option value="masters">Master's Program</option>
+                </select>
+            </div>
+
+            <div class="form-group">
                 <label for="targetSchool">Target Graduate School</label>
                 <select id="targetSchool" required>
                     <option value="">Select...</option>
@@ -469,6 +478,7 @@
         });
 
         function calculateAdmission() {
+            const programType = document.getElementById('programType').value;
             const targetSchool = document.getElementById('targetSchool').value;
             const gpa = parseFloat(document.getElementById('gpa').value);
             const college = document.getElementById('college').value;
@@ -481,11 +491,26 @@
             let score = 0;
             let maxScore = 100;
 
-            // GPA Score (35 points max)
-            const gpaScore = Math.min((gpa / 4.0) * 35, 35);
+            // Adjust scoring weights based on program type
+            let gpaWeight, researchWeight, pubWeight;
+            
+            if (programType === 'phd') {
+                // PhD programs weight research more heavily
+                gpaWeight = 30;
+                researchWeight = 30;
+                pubWeight = 20;
+            } else {
+                // Master's programs weight GPA more, research less
+                gpaWeight = 40;
+                researchWeight = 20;
+                pubWeight = 10;
+            }
+
+            // GPA Score
+            const gpaScore = Math.min((gpa / 4.0) * gpaWeight, gpaWeight);
             score += gpaScore;
 
-            // College Tier Score (15 points max)
+            // College Tier Score (15 points max for both)
             let collegeScore = 0;
             if (college === 'top10') collegeScore = 15;
             else if (college === 'top50') collegeScore = 12;
@@ -493,12 +518,12 @@
             else collegeScore = 6;
             score += collegeScore;
 
-            // Research Experience Score (25 points max)
-            const researchScore = Math.min(research * 5, 25);
+            // Research Experience Score
+            const researchScore = Math.min(research * (researchWeight / 5), researchWeight);
             score += researchScore;
 
-            // Publications Score (15 points max)
-            const pubScore = Math.min(publications * 1.5, 15);
+            // Publications Score
+            const pubScore = Math.min(publications * (pubWeight / 10), pubWeight);
             score += pubScore;
 
             // GRE Score (10 points max)
@@ -524,16 +549,16 @@
             let schoolName = '';
             
             if (targetSchool === 'top5') {
-                schoolDifficulty = 0.25; // Top 5 schools are extremely competitive
+                schoolDifficulty = programType === 'phd' ? 0.20 : 0.30; // PhDs harder at top schools
                 schoolName = 'Top 5 School';
             } else if (targetSchool === 'top10') {
-                schoolDifficulty = 0.35;
+                schoolDifficulty = programType === 'phd' ? 0.30 : 0.40;
                 schoolName = 'Top 10 School';
             } else if (targetSchool === 'top25') {
-                schoolDifficulty = 0.55;
+                schoolDifficulty = programType === 'phd' ? 0.50 : 0.60;
                 schoolName = 'Top 25 School';
             } else if (targetSchool === 'top50') {
-                schoolDifficulty = 0.75;
+                schoolDifficulty = programType === 'phd' ? 0.70 : 0.80;
                 schoolName = 'Top 50 School';
             } else if (targetSchool === 'top100') {
                 schoolDifficulty = 0.90;
@@ -546,61 +571,84 @@
             probability *= schoolDifficulty;
 
             // Boost for excellent profiles at top schools
-            if (targetSchool === 'top5' || targetSchool === 'top10') {
+            if (programType === 'phd' && (targetSchool === 'top5' || targetSchool === 'top10')) {
                 if (gpa >= 3.9 && research >= 3 && publications >= 3) {
-                    probability += 15; // Strong research profile bonus
+                    probability += 15; // Strong research profile bonus for PhD
                 }
+            }
+
+            // Master's programs generally have higher acceptance rates
+            if (programType === 'masters') {
+                probability *= 1.15;
             }
 
             // Ensure probability is between 1 and 95
             probability = Math.max(1, Math.min(95, probability));
 
             // Display results
-            displayResults(probability, gpaScore, collegeScore, researchScore, pubScore, greScore, gpa, research, publications, schoolName);
+            displayResults(probability, gpaScore, collegeScore, researchScore, pubScore, greScore, gpa, research, publications, schoolName, programType, gpaWeight, researchWeight, pubWeight);
         }
 
-        function displayResults(prob, gpaS, collegeS, researchS, pubS, greS, gpa, research, pubs) {
+        function displayResults(prob, gpaS, collegeS, researchS, pubS, greS, gpa, research, pubs, schoolName, programType, gpaWeight, researchWeight, pubWeight) {
             const resultDiv = document.getElementById('result');
             const probDiv = document.getElementById('probability');
             const textDiv = document.getElementById('resultText');
             
+            const programLabel = programType === 'phd' ? 'PhD' : "Master's";
+            
             probDiv.textContent = Math.round(prob) + '%';
             
-            if (prob >= 75) {
-                textDiv.textContent = 'Strong Chance of Admission!';
+            if (prob >= 70) {
+                textDiv.textContent = 'Strong Chance at ' + schoolName + ' ' + programLabel;
                 probDiv.style.color = '#10b981';
-            } else if (prob >= 50) {
-                textDiv.textContent = 'Moderate Chance of Admission';
+            } else if (prob >= 40) {
+                textDiv.textContent = 'Moderate Chance at ' + schoolName + ' ' + programLabel;
                 probDiv.style.color = '#f59e0b';
-            } else {
-                textDiv.textContent = 'Consider Strengthening Your Profile';
+            } else if (prob >= 15) {
+                textDiv.textContent = 'Reach School - ' + schoolName + ' ' + programLabel;
                 probDiv.style.color = '#ef4444';
+            } else {
+                textDiv.textContent = 'High Reach - ' + schoolName + ' ' + programLabel;
+                probDiv.style.color = '#dc2626';
             }
 
-            // Display factor scores
-            document.getElementById('gpaScore').textContent = Math.round(gpaS) + '/35';
+            // Display factor scores with adjusted weights
+            document.getElementById('gpaScore').textContent = Math.round(gpaS) + '/' + gpaWeight;
             document.getElementById('collegeScore').textContent = Math.round(collegeS) + '/15';
-            document.getElementById('researchScore').textContent = Math.round(researchS) + '/25';
-            document.getElementById('pubScore').textContent = Math.round(pubS) + '/15';
+            document.getElementById('researchScore').textContent = Math.round(researchS) + '/' + researchWeight;
+            document.getElementById('pubScore').textContent = Math.round(pubS) + '/' + pubWeight;
             document.getElementById('greScore').textContent = Math.round(greS) + '/10';
 
             // Generate recommendations
             let recommendations = '<h3>Recommendations</h3><ul>';
             
-            if (gpa < 3.5) {
-                recommendations += '<li>Focus on improving your GPA in remaining coursework</li>';
+            if (programType === 'phd') {
+                if (research < 2) {
+                    recommendations += '<li>PhD programs require strong research experience - aim for 2+ years</li>';
+                }
+                if (pubs < 1) {
+                    recommendations += '<li>Publications are crucial for PhD admissions - work on getting published</li>';
+                }
+                if (gpa < 3.5) {
+                    recommendations += '<li>Maintain a strong GPA, but research matters more for PhD programs</li>';
+                }
+            } else {
+                if (gpa < 3.3) {
+                    recommendations += '<li>GPA is heavily weighted for Master\'s programs - focus on coursework</li>';
+                }
+                if (research < 1 && prob < 50) {
+                    recommendations += '<li>Some research experience can strengthen your Master\'s application</li>';
+                }
             }
-            if (research < 2) {
-                recommendations += '<li>Seek research opportunities with professors in your field</li>';
+            
+            if (!document.getElementById('gre').value && prob < 60) {
+                recommendations += '<li>Consider taking the GRE to strengthen your application</li>';
             }
-            if (pubs < 2) {
-                recommendations += '<li>Consider presenting at conferences or co-authoring papers</li>';
+            if (prob < 30) {
+                recommendations += '<li>Apply to a range of schools including safety options</li>';
             }
-            if (!document.getElementById('gre').value) {
-                recommendations += '<li>Consider taking the GRE if applying to competitive programs</li>';
-            }
-            if (prob >= 75) {
-                recommendations += '<li>You have a strong profile! Apply to reach schools as well</li>';
+            if (prob >= 70) {
+                recommendations += '<li>Strong profile! Consider applying to reach schools as well</li>';
             }
             
             recommendations += '</ul>';
