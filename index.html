@@ -726,9 +726,9 @@
 
             // Field-specific competitiveness modifiers
             const fieldModifiers = {
-                'cs': 0.6, 'economics': 0.80, 'psychology': 0.85,
-                'engineering': 0.5, 'business': 0.85, 'math': 0.82,
-                'physics': 0.88, 'chemistry': 0.92, 'biology': 0.90,
+                'cs': 0.1, 'economics': 0.5, 'psychology': 0.85,
+                'engineering': 0.1, 'business': 0.85, 'math': 0.82,
+                'physics': 0.4, 'chemistry': 0.4, 'biology': 0.4,
                 'political-science': 0.93, 'sociology': 0.95,
                 'english': 0.87, 'history': 0.89, 'philosophy': 0.88,
                 'public-policy': 0.90, 'education': 0.95
@@ -745,7 +745,7 @@
             const phdMultiplier = programType === 'phd' ? 0.65 : 1.0;
             
             if (targetSchool === 'top5') {
-                schoolDifficulty = 0.001 * phdMultiplier;
+                schoolDifficulty = 0.0001 * phdMultiplier;
                 schoolName = 'Top 5';
             } else if (targetSchool === 'top10') {
                 schoolDifficulty = 0.1 * phdMultiplier;
