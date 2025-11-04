@@ -508,23 +508,44 @@
             // Scoring
             let score = 0;
             let weights = programType === 'phd' ? 
-                { gpa: 35, research: 40, pubs: 5, lor: 15, work: 5 } :
+                { gpa: 35, research: 45, pubs: 15, lor: 10, work: 5 } :
                 programType === 'masters' ?
-                { gpa: 30, research: 20, pubs: 10, lor: 15, work: 15 } :
-                { gpa: 25, research: 5, pubs: 5, lor: 15, work: 40 };
+                { gpa: 35, research: 30, pubs: 10, lor: 15, work: 10 } :
+                { gpa: 30, research: 5, pubs: 5, lor: 15, work: 45 };
 
-            score += (gpa / 4.0) * weights.gpa;
-            score += college === 'top10' ? 12 : college === 'top50' ? 10 : college === 'top100' ? 7 : 5;
-            score += Math.min((research / 4) * weights.research, weights.research);
-            score += Math.min((publications / 10) * weights.pubs, weights.pubs);
-            score += Math.min((workExp / 5) * weights.work, weights.work);
+            // GPA Score - more sensitive to changes
+            const gpaScore = (gpa / 4.0) * weights.gpa;
+            score += gpaScore;
             
-            if (lorQuality === 'exceptional') score += weights.lor;
-            else if (lorQuality === 'strong') score += weights.lor * 0.85;
-            else if (lorQuality === 'good') score += weights.lor * 0.65;
-            else score += weights.lor * 0.4;
+            // College prestige
+            let collegeScore = 0;
+            if (college === 'top10') collegeScore = 10;
+            else if (college === 'top50') collegeScore = 8;
+            else if (college === 'top100') collegeScore = 6;
+            else collegeScore = 4;
+            score += collegeScore;
+            
+            // Research - more sensitive to changes
+            const researchScore = Math.min((research / 4) * weights.research, weights.research);
+            score += researchScore;
+            
+            // Publications
+            const pubScore = Math.min((publications / 10) * weights.pubs, weights.pubs);
+            score += pubScore;
+            
+            // Work experience
+            const workScore = Math.min((workExp / 5) * weights.work, weights.work);
+            score += workScore;
+            // LOR quality
+            let lorScore = 0;
+            if (lorQuality === 'exceptional') lorScore = weights.lor;
+            else if (lorQuality === 'strong') lorScore = weights.lor * 0.85;
+            else if (lorQuality === 'good') lorScore = weights.lor * 0.65;
+            else lorScore = weights.lor * 0.4;
+            score += lorScore;
 
-            let probability = (score / 100) * 100;
+            // Calculate base probability from score (out of 110 total possible)
+            let probability = (score / 110) * 100;
 
             // Field difficulty
             const fieldMods = { cs: 0.65, economics: 0.70, psychology: 0.72, business: 0.75 };
@@ -542,9 +563,16 @@
             if (facultyFit) probability += 5;
             if (international) probability *= 0.82;
             
-            // ML adjustments
+            // ML adjustments - stronger GPA penalties
             if (programType === 'phd' && gpa >= 3.8 && research < 1.5 && publications === 0) {
                 probability *= 0.65;
+            }
+            if (gpa < 3.0 && (targetSchool === 'top5' || targetSchool === 'top10' || targetSchool === 'top25')) {
+                probability *= 0.45; // Very strong penalty for low GPA
+            } else if (gpa < 3.3 && (targetSchool === 'top5' || targetSchool === 'top10')) {
+                probability *= 0.70; // Strong penalty
+            } else if (gpa < 3.5 && targetSchool === 'top5') {
+                probability *= 0.85; // Moderate penalty even for decent GPAs at top schools
             }
             if (targetSchool === 'top5') probability *= 0.82;
             if ((targetSchool === 'top5' || targetSchool === 'top10') && programType === 'phd' && publications === 0) {
@@ -586,30 +614,45 @@
                     <h3>Score Breakdown</h3>
                     <div class="factor-item">
                         <span class="factor-label">GPA</span>
-                        <span class="factor-value">${Math.round((gpa/4)*weights.gpa)}/${weights.gpa}</span>
+                        <span class="factor-value">${Math.round(gpaScore)}/${weights.gpa}</span>
                     </div>
                     <div class="factor-item">
-                        <span class="factor-label">Research</span>
-                        <span class="factor-value">${Math.round(Math.min((research/4)*weights.research, weights.research))}/${weights.research}</span>
+                        <span class="factor-label">University Prestige</span>
+                        <span class="factor-value">${Math.round(collegeScore)}/10</span>
+                    </div>
+                    <div class="factor-item">
+                        <span class="factor-label">Research Experience</span>
+                        <span class="factor-value">${Math.round(researchScore)}/${weights.research}</span>
                     </div>
                     <div class="factor-item">
                         <span class="factor-label">Publications</span>
-                        <span class="factor-value">${Math.round(Math.min((publications/10)*weights.pubs, weights.pubs))}/${weights.pubs}</span>
+                        <span class="factor-value">${Math.round(pubScore)}/${weights.pubs}</span>
+                    </div>
+                    <div class="factor-item">
+                        <span class="factor-label">Letters of Recommendation</span>
+                        <span class="factor-value">${Math.round(lorScore)}/${weights.lor}</span>
                     </div>
                     <div class="factor-item">
                         <span class="factor-label">Work Experience</span>
-                        <span class="factor-value">${Math.round(Math.min((workExp/5)*weights.work, weights.work))}/${weights.work}</span>
+                        <span class="factor-value">${Math.round(workScore)}/${weights.work}</span>
+                    </div>
+                    <div class="factor-item" style="border-top: 2px solid rgba(220, 38, 38, 0.3); margin-top: 10px; padding-top: 15px;">
+                        <span class="factor-label"><strong>Raw Score Total</strong></span>
+                        <span class="factor-value"><strong>${Math.round(score)}/110</strong></span>
                     </div>
                 </div>
 
                 <div class="recommendation">
                     <h3>Recommendations</h3>
                     <ul>
+                        ${gpa < 3.0 ? '<li><strong>Critical:</strong> GPA below 3.0 is a major barrier at competitive programs. Consider post-bacc or other GPA-boosting options.</li>' : ''}
+                        ${gpa >= 3.0 && gpa < 3.3 && (targetSchool === 'top5' || targetSchool === 'top10') ? '<li>GPA is below typical admits for this tier. Exceptional research/publications needed to compensate.</li>' : ''}
                         ${probability < 10 ? '<li><strong>Reality Check:</strong> Your chances are very low for this tier. Consider less selective programs.</li>' : ''}
-                        ${(targetSchool === 'top5' || targetSchool === 'top10') && programType === 'phd' && publications === 0 ? '<li>Publications are critical for top PhD programs.</li>' : ''}
-                        ${research < 2 && programType === 'phd' ? '<li>PhD programs require substantial research experience (2+ years).</li>' : ''}
-                        ${!facultyFit && programType === 'phd' ? '<li>Contact potential advisors - faculty fit is crucial.</li>' : ''}
-                        ${targetSchool === 'top5' ? '<li><strong>Critical:</strong> Top 5 schools have ~3-8% acceptance rates. This should be a reach school.</li>' : ''}
+                        ${(targetSchool === 'top5' || targetSchool === 'top10') && programType === 'phd' && publications === 0 ? '<li><strong>Important:</strong> Publications are critical for top PhD programs.</li>' : ''}
+                        ${research < 2 && programType === 'phd' ? '<li>PhD programs require substantial research experience (2+ years recommended).</li>' : ''}
+                        ${!facultyFit && programType === 'phd' ? '<li>Contact potential advisors - faculty fit is crucial for PhD admissions.</li>' : ''}
+                        ${targetSchool === 'top5' ? '<li><strong>Critical:</strong> Top 5 schools have ~3-8% acceptance rates. Even perfect profiles face low odds.</li>' : ''}
+                        ${gpa >= 3.8 && research >= 3 && publications >= 3 ? '<li>Strong profile! Still apply to a range of schools - admissions can be unpredictable.</li>' : ''}
                         <li>Apply to 10-15 schools across different tiers for best results.</li>
                     </ul>
                 </div>
