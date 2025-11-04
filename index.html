@@ -812,11 +812,10 @@
                 weights = { gpa: 20, research: 30, publications: 20, gre: 8, lor: 10, app: 7, work: 5 };
             } else if (programType === 'masters') {
                 weights = { gpa: 30, research: 20, publications: 10, gre: 10, lor: 12, app: 10, work: 8 };
-            } else { // professional
+            } else {
                 weights = { gpa: 25, research: 5, publications: 5, gre: 10, lor: 15, app: 15, work: 25 };
             }
 
-            // If GRE is optional, redistribute GRE weight to other factors
             if (greOptional) {
                 const greWeight = weights.gre;
                 weights.gpa += greWeight * 0.4;
@@ -825,12 +824,10 @@
                 weights.gre = 0;
             }
 
-            // GPA Score (use higher of cumulative or major GPA)
             const effectiveGpa = Math.max(gpa, majorGpa);
             const gpaScore = Math.min((effectiveGpa / 4.0) * weights.gpa, weights.gpa);
             score += gpaScore;
 
-            // College prestige (fixed 12 points)
             let collegeScore = 0;
             if (college === 'top10') collegeScore = 12;
             else if (college === 'top50') collegeScore = 10;
@@ -838,16 +835,12 @@
             else collegeScore = 5;
             score += collegeScore;
 
-            // Research experience score
             let researchScore = Math.min((research / 4) * weights.research, weights.research);
-            // Bonus for extensive research
             if (research >= 3) researchScore *= 1.1;
             score += researchScore;
 
-            // Publications and conferences score
             let pubValue = publications * 2 + conferences * 0.5;
             
-            // Quality multiplier
             if (publicationQuality === 'top') pubValue *= 2;
             else if (publicationQuality === 'mid') pubValue *= 1.5;
             else if (publicationQuality === 'local') pubValue *= 1.2;
@@ -855,15 +848,13 @@
             let pubScore = Math.min((pubValue / 15) * weights.publications, weights.publications);
             score += pubScore;
 
-            // GRE scores
             let greScore = 0;
             if (greOptional) {
-                greScore = 0; // No penalty for GRE-optional programs
+                greScore = 0;
             } else if (greVerbal > 0 && greQuant > 0) {
                 const greTotal = greVerbal + greQuant;
-                const grePercentile = (greTotal - 260) / 80; // normalize to 0-1
+                const grePercentile = (greTotal - 260) / 80;
                 
-                // For STEM, weight quant more
                 const stemFields = ['cs', 'engineering', 'math', 'physics', 'chemistry', 'economics'];
                 if (stemFields.includes(specificField)) {
                     const quantWeight = (greQuant - 130) / 40;
@@ -872,17 +863,15 @@
                     greScore = grePercentile * weights.gre;
                 }
                 
-                // Bonus for high writing scores in humanities
                 const humanitiesFields = ['english', 'history', 'philosophy'];
                 if (humanitiesFields.includes(specificField) && greWriting >= 5.0) {
                     greScore *= 1.15;
                 }
             } else if (!greOptional) {
-                greScore = weights.gre * 0.3; // penalty for no GRE when required
+                greScore = weights.gre * 0.3;
             }
             score += greScore;
 
-            // Letters of recommendation score
             let lorScore = 0;
             if (lorQuality === 'exceptional') lorScore = weights.lor;
             else if (lorQuality === 'strong') lorScore = weights.lor * 0.85;
@@ -890,19 +879,16 @@
             else lorScore = weights.lor * 0.4;
             score += lorScore;
 
-            // Application materials score
             let appScore = 0;
             if (sopQuality === 'exceptional') appScore = weights.app;
             else if (sopQuality === 'strong') appScore = weights.app * 0.8;
             else if (sopQuality === 'average') appScore = weights.app * 0.6;
             else appScore = weights.app * 0.3;
             
-            // Awards bonus
             appScore += Math.min(awards * 0.5, weights.app * 0.3);
             appScore = Math.min(appScore, weights.app * 1.2);
             score += appScore;
 
-            // Work experience score
             let workScore = 0;
             if (programType === 'professional') {
                 workScore = Math.min((workExp / 5) * weights.work, weights.work);
@@ -911,45 +897,31 @@
             }
             score += workScore;
 
-            // Calculate base probability
             let probability = (score / maxScore) * 100;
 
-            // Field-specific competitiveness modifiers (more aggressive)
             const fieldModifiers = {
-                'cs': 0.65,           // CS is extremely competitive
-                'economics': 0.70,    // Econ PhDs very selective
-                'psychology': 0.72,   // Clinical psych especially
-                'business': 0.75,     // Top MBAs very selective
-                'engineering': 0.85,
-                'math': 0.75,
-                'physics': 0.82,
-                'chemistry': 0.88,
-                'biology': 0.86,
-                'political-science': 0.90,
-                'sociology': 0.92,
-                'english': 0.80,      // Limited spots
-                'history': 0.82,      // Very limited spots
-                'philosophy': 0.83,
-                'public-policy': 0.88,
-                'education': 0.93
+                'cs': 0.65, 'economics': 0.70, 'psychology': 0.72,
+                'business': 0.75, 'engineering': 0.85, 'math': 0.75,
+                'physics': 0.82, 'chemistry': 0.88, 'biology': 0.86,
+                'political-science': 0.90, 'sociology': 0.92,
+                'english': 0.80, 'history': 0.82, 'philosophy': 0.83,
+                'public-policy': 0.88, 'education': 0.93
             };
             
             if (fieldModifiers[specificField]) {
                 probability *= fieldModifiers[specificField];
             }
 
-            // School tier difficulty
             let schoolDifficulty = 1.0;
             let schoolName = '';
             
-            // Ultra-realistic difficulty multipliers reflecting actual acceptance rates
             const phdMultiplier = programType === 'phd' ? 0.70 : 1.0;
             
             if (targetSchool === 'top5') {
-                schoolDifficulty = 0.08 * phdMultiplier; // Top 5 is BRUTALLY selective (3-8% acceptance)
+                schoolDifficulty = 0.08 * phdMultiplier;
                 schoolName = 'Top 5';
             } else if (targetSchool === 'top10') {
-                schoolDifficulty = 0.15 * phdMultiplier; // Top 10 still extremely hard
+                schoolDifficulty = 0.15 * phdMultiplier;
                 schoolName = 'Top 10';
             } else if (targetSchool === 'top25') {
                 schoolDifficulty = 0.28 * phdMultiplier;
@@ -967,52 +939,43 @@
 
             probability *= schoolDifficulty;
 
-            // Bonuses and penalties (further reduced)
-            if (facultyFit) probability += 5; // Reduced from 8
-            if (applyingFunding && programType === 'phd') probability -= 10; // Increased penalty
-            if (international) probability *= 0.82; // Stronger penalty
-            if (firstGen) probability += 1.5; // Minimal boost
-            if (underrepresented) probability += 2; // Minimal boost
+            if (facultyFit) probability += 5;
+            if (applyingFunding && programType === 'phd') probability -= 10;
+            if (international) probability *= 0.82;
+            if (firstGen) probability += 1.5;
+            if (underrepresented) probability += 2;
 
-            // Exceptional profile bonus at top schools (very strict)
             if ((targetSchool === 'top5' || targetSchool === 'top10') && programType === 'phd') {
                 if (effectiveGpa >= 3.95 && research >= 4 && publications >= 5 && lorQuality === 'exceptional' && facultyFit) {
-                    probability += 6; // Minimal boost even for exceptional profiles
+                    probability += 6;
                 }
             }
 
-            // Professional master's adjustment
             if (programType === 'professional') {
-                probability *= 1.12; // Reduced from 1.15
+                probability *= 1.12;
             }
 
-            // Strict caps based on school tier - even perfect profiles face these limits
             if (targetSchool === 'top5') {
-                probability = Math.min(probability, 15); // Hard cap at 15% for Top 5
+                probability = Math.min(probability, 15);
             } else if (targetSchool === 'top10') {
-                probability = Math.min(probability, 30); // Hard cap at 30% for Top 10
+                probability = Math.min(probability, 30);
             } else if (targetSchool === 'top25') {
-                probability = Math.min(probability, 55); // Hard cap at 55% for Top 25
+                probability = Math.min(probability, 55);
             } else if (targetSchool === 'top50') {
-                probability = Math.min(probability, 75); // Hard cap at 75% for Top 50
+                probability = Math.min(probability, 75);
             }
 
-            // Cap probability between 0.5 and 90
             probability = Math.max(0.5, Math.min(90, probability));
 
-            // Machine learning adjustment based on historical patterns
-            // Simulate ML predictions based on profile patterns
             const mlAdjustment = applyMLAdjustment(
                 effectiveGpa, research, publications, lorQuality, 
                 targetSchool, programType, specificField, facultyFit
             );
             probability = probability * mlAdjustment;
-            probability = Math.max(1, Math.min(95, probability));
+            probability = Math.max(0.5, Math.min(90, probability));
 
-            // Calculate benchmarks
             const benchmarks = calculateBenchmarks(effectiveGpa, research, publications, targetSchool, programType);
 
-            // Analyze strengths and weaknesses
             const analysis = analyzeProfile({
                 gpa: effectiveGpa, majorGpa, research, publications, conferences,
                 publicationQuality, workExp, teachingExp, lorQuality, sopQuality,
@@ -1020,10 +983,8 @@
                 specificField, targetSchool, greOptional
             }, weights);
 
-            // Fetch real-world data context
             const dataContext = getDataContext(targetSchool, specificField, programType);
 
-            // Display results
             displayResults(
                 probability, gpaScore, collegeScore, researchScore, pubScore, 
                 greScore, lorScore, appScore, workScore, effectiveGpa, research, 
@@ -1032,67 +993,75 @@
             );
         }
 
-        // Machine Learning simulation - adjusts based on profile patterns
         function applyMLAdjustment(gpa, research, pubs, lorQuality, school, programType, field, facultyFit) {
             let adjustment = 1.0;
             
-            // Pattern 1: High GPA + Low Research (common rejection pattern for PhDs)
             if (programType === 'phd' && gpa >= 3.8 && research < 1.5 && pubs === 0) {
-                adjustment *= 0.65; // Strong penalty
+                adjustment *= 0.65;
             }
             
-            // Pattern 2: Moderate GPA + Strong Research (helps, but modest)
             if (programType === 'phd' && gpa >= 3.5 && gpa < 3.7 && research >= 2.5 && pubs >= 2) {
-                adjustment *= 1.05; // Minimal boost
+                adjustment *= 1.05;
             }
             
-            // Pattern 3: Faculty fit is helpful but not deterministic
             if ((school === 'top5' || school === 'top10') && facultyFit && lorQuality === 'exceptional') {
-                adjustment *= 1.04; // Very small boost
+                adjustment *= 1.04;
             }
             
-            // Pattern 4: CS/Economics need exceptional profiles
             if ((field === 'cs' || field === 'economics') && school === 'top5') {
                 if (gpa < 3.90 || research < 3 || pubs < 4) {
-                    adjustment *= 0.75; // Strong penalty
+                    adjustment *= 0.75;
                 }
             }
             
-            // Pattern 5: Professional programs value work experience
             if (programType === 'professional' && workExp >= 5) {
-                adjustment *= 1.08; // Modest boost
+                adjustment *= 1.08;
             }
             
-            // Pattern 6: Top 5 schools are lottery-like for everyone
             if (school === 'top5') {
-                adjustment *= 0.82; // Strong damper reflecting low acceptance rates
+                adjustment *= 0.82;
             }
             
-            // Pattern 7: No publications at top programs is critical
             if ((school === 'top5' || school === 'top10') && programType === 'phd' && pubs === 0) {
-                adjustment *= 0.70; // Major penalty
+                adjustment *= 0.70;
             }
             
-            // Pattern 8: Low GPA is very hard to overcome
             if (gpa < 3.0 && (school === 'top5' || school === 'top10' || school === 'top25')) {
-                adjustment *= 0.50; // Severe penalty for low GPA at competitive schools
+                adjustment *= 0.50;
             } else if (gpa < 3.3 && (school === 'top5' || school === 'top10')) {
-                adjustment *= 0.75; // Strong penalty
+                adjustment *= 0.75;
             }
             
-            // Pattern 9: Weak letters at top schools
             if ((school === 'top5' || school === 'top10') && lorQuality === 'generic') {
-                adjustment *= 0.70; // Generic letters hurt significantly
+                adjustment *= 0.70;
             }
             
             return adjustment;
+        }
+
+        function calculateBenchmarks(gpa, research, pubs, school, programType) {
+            const profiles = {
+                'top5': { gpa: 3.90, research: 3.5, pubs: 4 },
+                'top10': { gpa: 3.85, research: 2.5, pubs: 2.5 },
+                'top25': { gpa: 3.75, research: 2, pubs: 1.5 },
+                'top50': { gpa: 3.65, research: 1.5, pubs: 1 },
+                'top100': { gpa: 3.50, research: 1, pubs: 0.5 },
+                'regional': { gpa: 3.30, research: 0.5, pubs: 0 }
+            };
+
+            const typical = profiles[school] || profiles['top50'];
+            
+            const gpaPercentile = Math.min(100, Math.max(0, ((gpa - typical.gpa + 0.3) / 0.6) * 100));
+            const researchPercentile = Math.min(100, Math.max(0, ((research - typical.research + 1) / 2) * 100));
+            const pubsPercentile = Math.min(100, Math.max(0, ((pubs - typical.pubs + 1) / 2) * 100));
+
+            return { gpaPercentile, researchPercentile, pubsPercentile };
         }
 
         function analyzeProfile(profile, weights) {
             const strengths = [];
             const weaknesses = [];
             
-            // GPA analysis
             if (profile.gpa >= 3.95) {
                 strengths.push('Near-perfect GPA - exceptional (though still just one factor among many)');
             } else if (profile.gpa >= 3.85) {
@@ -1111,7 +1080,6 @@
                 strengths.push('Strong major GPA shows field-specific excellence');
             }
             
-            // Research analysis
             if (profile.programType === 'phd') {
                 if (profile.research >= 3) {
                     strengths.push('Extensive research experience - PhD-ready');
@@ -1122,7 +1090,6 @@
                 }
             }
             
-            // Publications analysis
             if (profile.publications >= 4) {
                 strengths.push('Exceptional publication record - highly competitive');
             } else if (profile.publications >= 2) {
@@ -1137,14 +1104,12 @@
                 strengths.push('Top-tier publications significantly strengthen profile');
             }
             
-            // LOR analysis
             if (profile.lorQuality === 'exceptional') {
                 strengths.push('Exceptional letters from renowned faculty - major asset');
             } else if (profile.lorQuality === 'generic') {
                 weaknesses.push('Generic letters won\'t distinguish your application');
             }
             
-            // Work experience
             if (profile.programType === 'professional' && profile.workExp >= 5) {
                 strengths.push('Extensive work experience ideal for professional programs');
             } else if (profile.programType === 'professional' && profile.workExp < 2) {
@@ -1155,7 +1120,6 @@
                 strengths.push('Teaching experience valuable for PhD career preparation');
             }
             
-            // GRE analysis
             if (!profile.greOptional) {
                 const greTotal = profile.greVerbal + profile.greQuant;
                 if (greTotal >= 325) {
@@ -1172,7 +1136,6 @@
                 }
             }
             
-            // Application materials
             if (profile.sopQuality === 'exceptional') {
                 strengths.push('Compelling statement of purpose');
             } else if (profile.sopQuality === 'weak') {
@@ -1183,14 +1146,12 @@
                 strengths.push('Multiple honors/awards demonstrate excellence');
             }
             
-            // Faculty fit
             if (profile.facultyFit) {
                 strengths.push('Identified faculty fit - critical for success');
             } else if (profile.programType === 'phd') {
                 weaknesses.push('Faculty fit essential - should contact potential advisors');
             }
             
-            // Overall balance check
             if (profile.targetSchool === 'top5') {
                 weaknesses.push('Top 5 schools (MIT, Stanford, Harvard, etc.) admit only 3-8% of applicants. Even near-perfect profiles face very low odds.');
             } else if (profile.targetSchool === 'top10') {
@@ -1208,9 +1169,6 @@
         }
 
         function getDataContext(school, field, programType) {
-            // Simulate web-scraped/ML-trained data about acceptance rates
-            // In a real implementation, this would query actual databases or APIs
-            
             const acceptanceRates = {
                 'top5': { phd: '3-8%', masters: '8-15%', professional: '10-20%' },
                 'top10': { phd: '8-15%', masters: '15-25%', professional: '20-30%' },
@@ -1253,26 +1211,6 @@
             };
         }
 
-        function calculateBenchmarks(gpa, research, pubs, school, programType) {
-            // Typical admitted student profiles
-            const profiles = {
-                'top5': { gpa: 3.85, research: 3, pubs: 3 },
-                'top10': { gpa: 3.80, research: 2.5, pubs: 2 },
-                'top25': { gpa: 3.70, research: 2, pubs: 1 },
-                'top50': { gpa: 3.60, research: 1.5, pubs: 1 },
-                'top100': { gpa: 3.50, research: 1, pubs: 0 },
-                'regional': { gpa: 3.30, research: 0.5, pubs: 0 }
-            };
-
-            const typical = profiles[school] || profiles['top50'];
-            
-            const gpaPercentile = Math.min(100, Math.max(0, ((gpa - typical.gpa + 0.3) / 0.6) * 100));
-            const researchPercentile = Math.min(100, Math.max(0, ((research - typical.research + 1) / 2) * 100));
-            const pubsPercentile = Math.min(100, Math.max(0, ((pubs - typical.pubs + 1) / 2) * 100));
-
-            return { gpaPercentile, researchPercentile, pubsPercentile };
-        }
-
         function displayResults(prob, gpaS, collegeS, researchS, pubS, greS, lorS, appS, workS, 
                                 gpa, research, pubs, schoolName, programType, weights, field, 
                                 benchmarks, analysis, dataContext, greOptional) {
@@ -1286,28 +1224,26 @@
             
             probDiv.textContent = prob < 1 ? prob.toFixed(1) + '%' : Math.round(prob) + '%';
             
-            // More realistic thresholds
             if (prob >= 50) {
                 textDiv.textContent = '✓ Competitive Chance at ' + schoolName + ' ' + programLabel;
-                probDiv.style.color = '#2d5986';
+                probDiv.style.color = '#4ade80';
             } else if (prob >= 25) {
                 textDiv.textContent = '○ Moderate Chance at ' + schoolName + ' ' + programLabel;
-                probDiv.style.color = '#8b4513';
+                probDiv.style.color = '#fbbf24';
             } else if (prob >= 10) {
                 textDiv.textContent = '△ Reach School - ' + schoolName + ' ' + programLabel;
-                probDiv.style.color = '#c4661f';
+                probDiv.style.color = '#fb923c';
             } else if (prob >= 3) {
                 textDiv.textContent = '⚠ High Reach - ' + schoolName + ' ' + programLabel;
-                probDiv.style.color = '#a0522d';
+                probDiv.style.color = '#f87171';
             } else {
                 textDiv.textContent = '⚠ Extremely Low Chance - ' + schoolName + ' ' + programLabel;
-                probDiv.style.color = '#8b0000';
+                probDiv.style.color = '#dc2626';
             }
 
-            // Display benchmarks
             const benchmarkDiv = document.getElementById('benchmark');
             benchmarkDiv.innerHTML = `
-                <div style="font-weight: 700; color: #1e3a5f; margin-bottom: 10px; font-size: 16px;">
+                <div style="font-weight: 700; color: #93c5fd; margin-bottom: 10px; font-size: 16px;">
                     📊 How You Compare to Typical Admits:
                 </div>
                 <div class="benchmark-item">GPA: ${Math.round(benchmarks.gpaPercentile)}th percentile</div>
@@ -1315,14 +1251,12 @@
                 <div class="benchmark-item">Publications: ${Math.round(benchmarks.pubsPercentile)}th percentile</div>
             `;
 
-            // Display strengths and weaknesses
             const strengthsList = document.getElementById('strengthsList');
             const weaknessesList = document.getElementById('weaknessesList');
             
             strengthsList.innerHTML = analysis.strengths.map(s => `<li>${s}</li>`).join('');
             weaknessesList.innerHTML = analysis.weaknesses.map(w => `<li>${w}</li>`).join('');
 
-            // Display data source information
             const dataSourceDiv = document.getElementById('dataSource');
             dataSourceDiv.innerHTML = `
                 <strong>📚 Data Context (${dataContext.dataYear}):</strong><br>
@@ -1331,7 +1265,6 @@
                 <strong>Typical Admitted Profile:</strong> ${dataContext.typicalProfile}
             `;
 
-            // Display factor scores
             document.getElementById('gpaScore').textContent = Math.round(gpaS) + '/' + Math.round(weights.gpa);
             document.getElementById('collegeScore').textContent = Math.round(collegeS) + '/12';
             document.getElementById('researchScore').textContent = Math.round(researchS) + '/' + Math.round(weights.research);
@@ -1341,7 +1274,6 @@
             document.getElementById('appScore').textContent = Math.round(appS) + '/' + Math.round(weights.app);
             document.getElementById('workScore').textContent = Math.round(workS) + '/' + Math.round(weights.work);
 
-            // Generate tailored recommendations
             let recommendations = '<h3>Personalized Recommendations</h3><ul>';
             
             if (programType === 'phd') {
@@ -1373,13 +1305,11 @@
                 }
             }
 
-            // Field-specific advice
             const competitiveFields = ['cs', 'economics', 'psychology'];
             if (competitiveFields.includes(field) && prob < 40) {
                 recommendations += '<li>This field is highly competitive. Consider applying to a wider range of schools including safety options.</li>';
             }
 
-            // GRE advice
             const greVerbal = parseInt(document.getElementById('greVerbal').value) || 0;
             const greQuant = parseInt(document.getElementById('greQuant').value) || 0;
             const greOptional = document.getElementById('greOptional').checked;
@@ -1401,7 +1331,6 @@
                 recommendations += '<li><strong>Reality Check:</strong> Your chances are very low for this tier. Strongly consider applying to less selective programs.</li>';
             }
             
-            // Reality check for top schools
             if (targetSchool === 'top5') {
                 recommendations += '<li><strong>Critical:</strong> Top 5 schools have ~3-8% acceptance rates. Even the strongest applicants face rejection. This should be a reach school in a balanced application strategy.</li>';
             } else if (targetSchool === 'top10') {
