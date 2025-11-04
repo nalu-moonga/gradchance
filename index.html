@@ -1331,6 +1331,7 @@
                 recommendations += '<li><strong>Reality Check:</strong> Your chances are very low for this tier. Strongly consider applying to less selective programs.</li>';
             }
             
+            const targetSchool = document.getElementById('targetSchool').value;
             if (targetSchool === 'top5') {
                 recommendations += '<li><strong>Critical:</strong> Top 5 schools have ~3-8% acceptance rates. Even the strongest applicants face rejection. This should be a reach school in a balanced application strategy.</li>';
             } else if (targetSchool === 'top10') {
@@ -1346,6 +1347,63 @@
             
             recommendations += '</ul>';
             document.getElementById('recommendations').innerHTML = recommendations;
+
+            resultDiv.innerHTML = `
+                <div class="probability" id="probability">${probDiv.textContent}</div>
+                <div class="result-text" id="resultText">${textDiv.textContent}</div>
+                ${benchmarkDiv.outerHTML}
+                <div class="strength-weakness">
+                    <div class="strength-box">
+                        <h4>💪 Profile Strengths</h4>
+                        <ul>${strengthsList.innerHTML}</ul>
+                    </div>
+                    <div class="weakness-box">
+                        <h4>⚠️ Areas to Improve</h4>
+                        <ul>${weaknessesList.innerHTML}</ul>
+                    </div>
+                </div>
+                <div class="factors">
+                    <h3>Detailed Score Breakdown</h3>
+                    <div class="factor-item">
+                        <span class="factor-label">Academic Record (GPA)</span>
+                        <span class="factor-value">${Math.round(gpaS)}/${Math.round(weights.gpa)}</span>
+                    </div>
+                    <div class="factor-item">
+                        <span class="factor-label">Undergraduate Institution</span>
+                        <span class="factor-value">${Math.round(collegeS)}/12</span>
+                    </div>
+                    <div class="factor-item">
+                        <span class="factor-label">Research Experience</span>
+                        <span class="factor-value">${Math.round(researchS)}/${Math.round(weights.research)}</span>
+                    </div>
+                    <div class="factor-item">
+                        <span class="factor-label">Publications & Conferences</span>
+                        <span class="factor-value">${Math.round(pubS)}/${Math.round(weights.publications)}</span>
+                    </div>
+                    <div class="factor-item">
+                        <span class="factor-label">Test Scores (GRE)</span>
+                        <span class="factor-value">${greOptional ? 'N/A (Optional)' : Math.round(greS) + '/' + Math.round(weights.gre)}</span>
+                    </div>
+                    <div class="factor-item">
+                        <span class="factor-label">Letters of Recommendation</span>
+                        <span class="factor-value">${Math.round(lorS)}/${Math.round(weights.lor)}</span>
+                    </div>
+                    <div class="factor-item">
+                        <span class="factor-label">Application Materials</span>
+                        <span class="factor-value">${Math.round(appS)}/${Math.round(weights.app)}</span>
+                    </div>
+                    <div class="factor-item">
+                        <span class="factor-label">Professional Experience</span>
+                        <span class="factor-value">${Math.round(workS)}/${Math.round(weights.work)}</span>
+                    </div>
+                </div>
+                ${recommendations}
+                ${dataSourceDiv.outerHTML}
+            `;
+
+            // Apply probability color
+            const newProbDiv = resultDiv.querySelector('.probability');
+            newProbDiv.style.color = probDiv.style.color;
 
             resultDiv.classList.add('show');
             resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
